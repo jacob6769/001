@@ -24,14 +24,28 @@ document.getElementById("이미지업로드").addEventListener("change", (e) => 
     reader.onload = (evt) => {
         업로드이미지 = new Image();
         업로드이미지.onload = () => {
+            // 캔버스 크기에 맞춰 이미지 스케일 조정
             이미지위치 = { x: 0, y: 0 };
-            이미지스케일 = 1;
+            이미지스케일 = 1; 
+            
+            // 가로세로 비율 유지하면서 캔버스 500x700 안에 맞추기
+            const canvasW = canvas.width;
+            const canvasH = canvas.height;
+            const scaleX = canvasW / 업로드이미지.width;
+            const scaleY = canvasH / 업로드이미지.height;
+            이미지스케일 = Math.min(scaleX, scaleY);
+
+            // 가운데 정렬
+            이미지위치.x = (canvasW - 업로드이미지.width * 이미지스케일) / 2;
+            이미지위치.y = (canvasH - 업로드이미지.height * 이미지스케일) / 2;
+
             그리기();
         };
         업로드이미지.src = evt.target.result;
     };
     reader.readAsDataURL(file);
 });
+
 
 // 템플릿 적용
 document.querySelectorAll(".템플릿버튼").forEach(btn => {
@@ -164,5 +178,6 @@ function 그리기() {
         ctx.drawImage(템플릿이미지, 0, 0, canvas.width, canvas.height);
     }
 }
+
 
 
