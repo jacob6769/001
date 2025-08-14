@@ -7,9 +7,14 @@ let 현재모드 = "이동"; // 이동 / 그림
 let 펜색 = document.getElementById("펜색상").value;
 let 펜크기 = parseInt(document.getElementById("펜크기").value);
 let 그림그리는중 = false;
-let 이미지위치 = { x: 0, y: 0 };
 let 드래그중 = false;
 let 시작좌표 = { x: 0, y: 0 };
+let 이미지위치 = { x: 0, y: 0 };
+let 이미지스케일 = 1;
+
+// 터치 확대 관련
+let 초기거리 = 0;
+let 초기스케일 = 1;
 
 // 이미지 업로드
 document.getElementById("이미지업로드").addEventListener("change", (e) => {
@@ -20,6 +25,7 @@ document.getElementById("이미지업로드").addEventListener("change", (e) => 
         업로드이미지 = new Image();
         업로드이미지.onload = () => {
             이미지위치 = { x: 0, y: 0 };
+            이미지스케일 = 1;
             그리기();
         };
         업로드이미지.src = evt.target.result;
@@ -50,14 +56,11 @@ document.getElementById("전체지우기").addEventListener("click", () => {
     그리기();
 });
 
-// 좌표 계산 (마우스/터치 공용)
+// 좌표 계산
 function getPos(evt) {
     let rect = canvas.getBoundingClientRect();
     if (evt.touches) {
-        return {
-            x: evt.touches[0].clientX - rect.left,
-            y: evt.touches[0].clientY - rect.top
-        };
+        return { x: evt.touches[0].clientX - rect.left, y: evt.touches[0].clientY - rect.top };
     }
     return { x: evt.offsetX, y: evt.offsetY };
 }
@@ -65,6 +68,7 @@ function getPos(evt) {
 // 시작
 function startDrawOrMove(e) {
     e.preventDefault();
+    if (e.touches && e.touches.length === 2) return; // 멀티터치 시 이동/그리기 중지
     let pos = getPos(e);
     if (현재모드 === "이동") {
         드래그중 = true;
@@ -76,9 +80,25 @@ function startDrawOrMove(e) {
     }
 }
 
-// 이동
+// 이동/그리기
 function moveDrawOrMove(e) {
     e.preventDefault();
+    if (e.touches && e.touches.length === 2) {
+        // 멀티터치 확대/축소
+        let t1 = e.touches[0], t2 = e.touches[1];
+        let dist = Math.hypot(t2.clientX - t1.clientX, t2.clientY - t1.clientY);
+        if (초기거리 === 0) {
+            초기거리 = dist;
+            초기스케일 = 이미지스케일;
+        } else {
+            이미지스케일 = 초기스케일 * (dist / 초기거리);
+            if (이미지스케일 < 0.1) 이미지스케일 = 0.1;
+            if (이미지스케일 > 5) 이미지스케일 = 5;
+            그리기();
+        }
+        return;
+    }
+
     let pos = getPos(e);
     if (현재모드 === "이동" && 드래그중) {
         이미지위치.x = pos.x - 시작좌표.x;
@@ -93,12 +113,13 @@ function moveDrawOrMove(e) {
 }
 
 // 종료
-function endDrawOrMove() {
+function endDrawOrMove(e) {
     드래그중 = false;
     그림그리는중 = false;
+    if (!e.touches || e.touches.length < 2) 초기거리 = 0;
 }
 
-// 이벤트 등록 (마우스+터치)
+// 이벤트 등록
 canvas.addEventListener("mousedown", startDrawOrMove);
 canvas.addEventListener("mousemove", moveDrawOrMove);
 canvas.addEventListener("mouseup", endDrawOrMove);
@@ -107,6 +128,16 @@ canvas.addEventListener("mouseleave", endDrawOrMove);
 canvas.addEventListener("touchstart", startDrawOrMove, { passive: false });
 canvas.addEventListener("touchmove", moveDrawOrMove, { passive: false });
 canvas.addEventListener("touchend", endDrawOrMove);
+
+// 마우스 휠 확대/축소
+canvas.addEventListener("wheel", (e) => {
+    e.preventDefault();
+    const scaleAmount = e.deltaY < 0 ? 1.1 : 0.9;
+    이미지스케일 *= scaleAmount;
+    if (이미지스케일 < 0.1) 이미지스케일 = 0.1;
+    if (이미지스케일 > 5) 이미지스케일 = 5;
+    그리기();
+}, { passive: false });
 
 // 다운로드
 document.getElementById("다운로드버튼").addEventListener("click", () => {
@@ -121,9 +152,15 @@ document.getElementById("다운로드버튼").addEventListener("click", () => {
     }
 });
 
-// 그리기 함수
+// 그리기
 function 그리기() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-    if (업로드이미지) ctx.drawImage(업로드이미지, 이미지위치.x, 이미지위치.y);
-    if (템플릿이미지) ctx.drawImage(템플릿이미지, 0, 0, canvas.width, canvas.height);
+    if (업로드이미지) {
+        let w = 업로드이미지.width * 이미지스케일;
+        let h = 업로드이미지.height * 이미지스케일;
+        ctx.drawImage(업로드이미지, 이미지위치.x, 이미지위치.y, w, h);
+    }
+    if (템플릿이미지) {
+        ctx.drawImage(템플릿이미지, 0, 0, canvas.width, canvas.height);
+    }
 }
