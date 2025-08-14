@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>포토카드 제작</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <h1>📸 포토카드 제작 사이트</h1>
+
+    <!-- 이미지 업로드 -->
+    <input type="file" id="이미지업로드" accept="image/*">
+
+    <!-- 템플릿 선택 -->
+    <div id="템플릿영역">
+        <button class="템플릿버튼" data-template="templates/template1.png">템플릿 1</button>
+        <button class="템플릿버튼" data-template="templates/template2.png">템플릿 2</button>
+    </div>
+
+    <!-- 모드 전환 -->
+    <div id="모드버튼영역">
+        <button id="사진이동모드">사진 이동</button>
+        <button id="그림모드">그림 그리기</button>
+    </div>
+
+    <!-- 그림 옵션 -->
+    <div id="그림옵션">
+        색상: <input type="color" id="펜색상" value="#ff0000">
+        크기: <input type="number" id="펜크기" value="5" min="1" max="50">
+        <button id="지우개">지우개</button>
+        <button id="전체지우기">전체 지우기</button>
+    </div>
+
+    <!-- 미리보기 캔버스 -->
+    <canvas id="미리보기" width="500" height="700"></canvas>
+
+    <!-- 다운로드 -->
+    <button id="다운로드버튼">최종판 다운로드</button>
+
+    <script src="script.js"></script>
+</body>
+</html>
