@@ -92,7 +92,7 @@ function moveDrawOrMove(e) {
             초기스케일 = 이미지스케일;
         } else {
             이미지스케일 = 초기스케일 * (dist / 초기거리);
-            if (이미지스케일 < 0.1) 이미지스케일 = 0.1;
+            if (이미지스케일 < 0.01) 이미지스케일 = 0.1;
             if (이미지스케일 > 5) 이미지스케일 = 5;
             그리기();
         }
@@ -164,3 +164,4 @@ function 그리기() {
         ctx.drawImage(템플릿이미지, 0, 0, canvas.width, canvas.height);
     }
 }
+
