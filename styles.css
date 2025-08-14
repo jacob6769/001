@@ -30,3 +30,8 @@ button:hover {
     border: 2px solid #ddd;
     margin-top: 20px;
 }
+p {
+    color: #fff;
+    text-shadow: 1px 1px 1px rgba(0,0,0,0.3);
+}
+
