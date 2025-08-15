@@ -1,51 +1,61 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <title>포토카드 제작</title>
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
+
     <h1>📸 포토카드 제작 사이트</h1>
 
     <!-- 이미지 업로드 -->
-    <input type="file" id="이미지업로드" accept="image/*">
+    <section>
+        <input type="file" id="이미지업로드" accept="image/*">
+    </section>
 
     <!-- 템플릿 선택 -->
-    <div id="템플릿영역">
+    <section id="템플릿영역">
         <button class="템플릿버튼" data-template="templates/templatetest1.png">템플릿 1</button>
         <button class="템플릿버튼" data-template="templates/template2.png">템플릿 2</button>
-    </div>
+    </section>
 
     <!-- 모드 전환 -->
-    <div id="모드버튼영역">
+    <section id="모드버튼영역">
         <button id="사진이동모드">사진 이동</button>
         <button id="그림모드">그림 그리기</button>
-    </div>
+    </section>
 
     <!-- 그림 옵션 -->
-    <div id="그림옵션">
-        색상: <input type="color" id="펜색상" value="#ff0000">
-        크기: <input type="number" id="펜크기" value="5" min="1" max="50">
+    <section id="그림옵션">
+        <label for="펜색상">색상:</label>
+        <input type="color" id="펜색상" value="#ff0000">
+
+        <label for="펜크기">크기:</label>
+        <input type="number" id="펜크기" value="5" min="1" max="50">
+
         <button id="지우개">지우개</button>
         <button id="전체지우기">전체 지우기</button>
-    </div>
+    </section>
 
     <!-- 미리보기 캔버스 -->
-    <canvas id="미리보기" width="500" height="700"></canvas>
+    <section>
+        <canvas id="미리보기" width="500" height="700"></canvas>
+    </section>
 
     <!-- 다운로드 -->
-    <button id="다운로드버튼">최종판 다운로드</button>
-    <p>제작:20109,20110,+명단 들어오면 추가 예정</p>
-    <p1>이 사이트는 버그가 있을 수 있습니다</p1>
-    <p2>버그 발생시 새로고침하세요</p2>
+    <section>
+        <button id="다운로드버튼">최종판 다운로드</button>
+    </section>
+
+    <!-- 하단 정보 -->
+    <footer>
+        <p class="p-black">제작: 20109, 20110, <span>+명단 들어오면 추가 예정</span></p>
+        <p class="p-warning">이 사이트는 버그가 있을 수 있습니다.</p>
+        <p class="p-warning">버그 발생 시 새로고침하세요.</p>
+    </footer>
+
     <script src="script.js"></script>
 </body>
 </html>
-
-
-
-
-
-
