@@ -2,7 +2,7 @@
 body {
     margin: 0;
     font-family: 'Pretendard', sans-serif;
-    background: linear-gradient(135deg, #ffe0f2, #d7ffff); /* 파스텔 핑크 → 파스텔 블루 */
+    background: linear-gradient(135deg, #fce3ec, #c2e9fb); /* 파스텔 핑크 → 파스텔 블루 */
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -83,3 +83,4 @@ p-warning {
         height: auto;
     }
 }
+
