@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <title>포토카드 제작</title>
-    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
 
@@ -12,7 +12,7 @@
 
     <!-- 이미지 업로드 -->
     <section>
-        <input type="file" id="이미지업로드" accept="image/*">
+        <input type="file" id="이미지업로드" accept="image/*" />
     </section>
 
     <!-- 템플릿 선택 -->
@@ -30,10 +30,10 @@
     <!-- 그림 옵션 -->
     <section id="그림옵션">
         <label for="펜색상">색상:</label>
-        <input type="color" id="펜색상" value="#ff0000">
+        <input type="color" id="펜색상" value="#ff0000" />
 
         <label for="펜크기">크기:</label>
-        <input type="number" id="펜크기" value="5" min="1" max="50">
+        <input type="number" id="펜크기" value="5" min="1" max="50" />
 
         <button id="지우개">지우개</button>
         <button id="전체지우기">전체 지우기</button>
@@ -41,7 +41,7 @@
 
     <!-- 미리보기 캔버스 -->
     <section>
-        <canvas id="미리보기" width="500" height="700"></canvas>
+        <canvas id="미리보기"></canvas>
     </section>
 
     <!-- 다운로드 -->
@@ -59,4 +59,3 @@
     <script src="script.js"></script>
 </body>
 </html>
-
