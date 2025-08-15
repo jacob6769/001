@@ -60,24 +60,24 @@ document.getElementById('전체지우기').addEventListener('click', () => {
     drawAll();
 });
 
-// ================== 좌표 계산 ==================
+// ================== 좌표 계산 (모바일 터치 보정) ==================
 function getPointerPos(e) {
     const rect = canvas.getBoundingClientRect();
     let x, y;
 
     if (e.touches) {
-        x = e.touches[0].clientX - rect.left;
-        y = e.touches[0].clientY - rect.top;
+        // 터치 이벤트 좌표를 캔버스 크기에 맞춰 보정
+        const scaleX = canvas.width / rect.width;
+        const scaleY = canvas.height / rect.height;
+
+        x = (e.touches[0].clientX - rect.left) * scaleX;
+        y = (e.touches[0].clientY - rect.top) * scaleY;
     } else {
         x = e.offsetX;
         y = e.offsetY;
     }
 
-    // 캔버스 실제 크기와 CSS 크기 비율 적용
-    const scaleX = canvas.width / rect.width;
-    const scaleY = canvas.height / rect.height;
-
-    return { x: x * scaleX, y: y * scaleY };
+    return { x, y };
 }
 
 // ================== 시작 ==================
@@ -156,7 +156,6 @@ canvas.addEventListener('touchmove', e => {
         if (lastTouchDist) {
             const zoom = dist / lastTouchDist;
 
-            // 중심점 기준 확대
             offsetX = centerX - (centerX - offsetX) * zoom;
             offsetY = centerY - (centerY - offsetY) * zoom;
             targetScale *= zoom;
