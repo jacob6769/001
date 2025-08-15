@@ -44,6 +44,7 @@ document.querySelectorAll('.템플릿버튼').forEach(btn => {
     btn.addEventListener('click', () => {
         templateImg = new Image();
         templateImg.onload = drawAll;
+        templateImg.onerror = () => alert("템플릿 이미지를 불러올 수 없습니다.");
         templateImg.src = btn.dataset.template;
     });
 });
@@ -161,20 +162,41 @@ canvas.addEventListener('touchmove', e => {
 
 // ================== 다운로드 ==================
 document.getElementById('다운로드버튼').addEventListener('click', () => {
+    if (!uploadedImg) { alert("업로드한 이미지가 없습니다."); return; }
+
     const finalCanvas = document.createElement('canvas');
     finalCanvas.width = canvas.width;
     finalCanvas.height = canvas.height;
     const finalCtx = finalCanvas.getContext('2d');
 
-    if (uploadedImg) finalCtx.drawImage(uploadedImg, offsetX, offsetY, uploadedImg.width * scale, uploadedImg.height * scale);
-    if (templateImg) finalCtx.drawImage(templateImg, 0, 0, canvas.width, canvas.height);
-    finalCtx.drawImage(drawCanvas, 0, 0);
+    // 업로드 이미지
+    finalCtx.drawImage(uploadedImg, offsetX, offsetY, uploadedImg.width * scale, uploadedImg.height * scale);
 
+    // 템플릿 이미지
+    if (templateImg) {
+        if (!templateImg.complete) {
+            templateImg.onload = () => {
+                finalCtx.drawImage(templateImg, 0, 0, canvas.width, canvas.height);
+                finalCtx.drawImage(drawCanvas, 0, 0);
+                triggerDownload(finalCanvas);
+            };
+            return;
+        } else {
+            finalCtx.drawImage(templateImg, 0, 0, canvas.width, canvas.height);
+        }
+    }
+
+    // 그림 레이어
+    finalCtx.drawImage(drawCanvas, 0, 0);
+    triggerDownload(finalCanvas);
+});
+
+function triggerDownload(c) {
     const link = document.createElement('a');
     link.download = 'photocard.png';
-    link.href = finalCanvas.toDataURL();
+    link.href = c.toDataURL();
     link.click();
-});
+}
 
 // ================== 그리기 ==================
 function drawAll() {
