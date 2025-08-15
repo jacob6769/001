@@ -63,14 +63,21 @@ document.getElementById('전체지우기').addEventListener('click', () => {
 // ================== 좌표 계산 ==================
 function getPointerPos(e) {
     const rect = canvas.getBoundingClientRect();
+    let x, y;
+
     if (e.touches) {
-        return {
-            x: e.touches[0].clientX - rect.left,
-            y: e.touches[0].clientY - rect.top
-        };
+        x = e.touches[0].clientX - rect.left;
+        y = e.touches[0].clientY - rect.top;
     } else {
-        return { x: e.offsetX, y: e.offsetY };
+        x = e.offsetX;
+        y = e.offsetY;
     }
+
+    // 캔버스 실제 크기와 CSS 크기 비율 적용
+    const scaleX = canvas.width / rect.width;
+    const scaleY = canvas.height / rect.height;
+
+    return { x: x * scaleX, y: y * scaleY };
 }
 
 // ================== 시작 ==================
@@ -169,10 +176,8 @@ document.getElementById('다운로드버튼').addEventListener('click', () => {
     finalCanvas.height = canvas.height;
     const finalCtx = finalCanvas.getContext('2d');
 
-    // 업로드 이미지
     finalCtx.drawImage(uploadedImg, offsetX, offsetY, uploadedImg.width * scale, uploadedImg.height * scale);
 
-    // 템플릿 이미지
     if (templateImg) {
         if (!templateImg.complete) {
             templateImg.onload = () => {
@@ -186,7 +191,6 @@ document.getElementById('다운로드버튼').addEventListener('click', () => {
         }
     }
 
-    // 그림 레이어
     finalCtx.drawImage(drawCanvas, 0, 0);
     triggerDownload(finalCanvas);
 });
@@ -200,7 +204,7 @@ function triggerDownload(c) {
 
 // ================== 그리기 ==================
 function drawAll() {
-    scale += (targetScale - scale) * 0.2; // 부드러운 확대/축소
+    scale += (targetScale - scale) * 0.2;
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     if (uploadedImg) ctx.drawImage(uploadedImg, offsetX, offsetY, uploadedImg.width * scale, uploadedImg.height * scale);
     if (templateImg) ctx.drawImage(templateImg, 0, 0, canvas.width, canvas.height);
@@ -208,5 +212,4 @@ function drawAll() {
     requestAnimationFrame(drawAll);
 }
 
-// 초기 호출
 drawAll();
