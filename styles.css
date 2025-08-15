@@ -49,6 +49,9 @@ canvas#미리보기 {
     backdrop-filter: blur(15px);
     -webkit-backdrop-filter: blur(15px);
     margin-top: 30px;
+    max-width: 100%;
+    height: auto;
+    display: block;
 }
 
 /* 입력 필드 */
@@ -80,11 +83,6 @@ input[type="file"] {
 
 /* 모바일 대응 */
 @media (max-width: 600px) {
-    canvas#미리보기 {
-        width: 90%;
-        height: auto;
-    }
-
     button {
         font-size: 0.9rem;
         padding: 8px 12px;
