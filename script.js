@@ -16,26 +16,6 @@ let 이미지스케일 = 1;
 let 초기거리 = 0;
 let 초기스케일 = 1;
 
-// 캔버스 기본 크기 (기본 해상도)
-const 기본캔버스_가로 = 500;
-const 기본캔버스_세로 = 700;
-
-// 캔버스 반응형 처리 함수
-function resizeCanvas() {
-    const containerWidth = window.innerWidth - 40; // body padding 20*2 고려
-    const maxCanvasWidth = Math.min(containerWidth * 0.9, 기본캔버스_가로);
-    const aspectRatio = 기본캔버스_세로 / 기본캔버스_가로;
-
-    canvas.width = 기본캔버스_가로;
-    canvas.height = 기본캔버스_세로;
-
-    // CSS 크기 조정
-    canvas.style.width = `${maxCanvasWidth}px`;
-    canvas.style.height = `${maxCanvasWidth * aspectRatio}px`;
-
-    그리기();
-}
-
 // 이미지 업로드
 document.getElementById("이미지업로드").addEventListener("change", (e) => {
     let file = e.target.files[0];
@@ -44,23 +24,29 @@ document.getElementById("이미지업로드").addEventListener("change", (e) => 
     reader.onload = (evt) => {
         업로드이미지 = new Image();
         업로드이미지.onload = () => {
+            // 캔버스 크기에 맞춰 이미지 스케일 조정
             이미지위치 = { x: 0, y: 0 };
             이미지스케일 = 1;
-
-            // 캔버스 기본 크기 기준으로 이미지 스케일 조정
-            const scaleX = canvas.width / 업로드이미지.width;
-            const scaleY = canvas.height / 업로드이미지.height;
+            이미지스케일 = 1; 
+            
+            // 가로세로 비율 유지하면서 캔버스 500x700 안에 맞추기
+            const canvasW = canvas.width;
+            const canvasH = canvas.height;
+            const scaleX = canvasW / 업로드이미지.width;
+            const scaleY = canvasH / 업로드이미지.height;
             이미지스케일 = Math.min(scaleX, scaleY);
 
             // 가운데 정렬
-            이미지위치.x = (canvas.width - 업로드이미지.width * 이미지스케일) / 2;
-            이미지위치.y = (canvas.height - 업로드이미지.height * 이미지스케일) / 2;
+            이미지위치.x = (canvasW - 업로드이미지.width * 이미지스케일) / 2;
+            이미지위치.y = (canvasH - 업로드이미지.height * 이미지스케일) / 2;
 
             그리기();
         };
         업로드이미지.src = evt.target.result;
     };
+    reader.readAsDataURL(file);
 });
+
 
 // 템플릿 적용
 document.querySelectorAll(".템플릿버튼").forEach(btn => {
@@ -85,31 +71,19 @@ document.getElementById("전체지우기").addEventListener("click", () => {
     그리기();
 });
 
-// 좌표 계산 (반응형 및 터치 보정 포함)
+// 좌표 계산
 function getPos(evt) {
-    const rect = canvas.getBoundingClientRect();
-    const scaleX = canvas.width / rect.width;
-    const scaleY = canvas.height / rect.height;
-
-    let clientX, clientY;
-    if (evt.touches && evt.touches.length > 0) {
-        clientX = evt.touches[0].clientX;
-        clientY = evt.touches[0].clientY;
-    } else {
-        clientX = evt.clientX;
-        clientY = evt.clientY;
+    let rect = canvas.getBoundingClientRect();
+    if (evt.touches) {
+        return { x: evt.touches[0].clientX - rect.left, y: evt.touches[0].clientY - rect.top };
     }
-
-    return {
-        x: (clientX - rect.left) * scaleX,
-        y: (clientY - rect.top) * scaleY
-    };
+    return { x: evt.offsetX, y: evt.offsetY };
 }
 
 // 시작
 function startDrawOrMove(e) {
     e.preventDefault();
-    if (e.touches && e.touches.length === 2) return; // 멀티터치 시 중지
+    if (e.touches && e.touches.length === 2) return; // 멀티터치 시 이동/그리기 중지
     let pos = getPos(e);
     if (현재모드 === "이동") {
         드래그중 = true;
@@ -132,8 +106,9 @@ function moveDrawOrMove(e) {
             초기거리 = dist;
             초기스케일 = 이미지스케일;
         } else {
-            let scaleChange = dist / 초기거리;
-            이미지스케일 = 초기스케일 * scaleChange;
+            이미지스케일 = 초기스케일 * (dist / 초기거리);
+            if (이미지스케일 < 0.01) 이미지스케일 = 0.01;
+            if (이미지스케일 > 5) 이미지스케일 = 5;
             그리기();
         }
         return;
@@ -147,8 +122,6 @@ function moveDrawOrMove(e) {
     } else if (현재모드 === "그림" && 그림그리는중) {
         ctx.strokeStyle = 펜색;
         ctx.lineWidth = 펜크기;
-        ctx.lineCap = "round";
-        ctx.lineJoin = "round";
         ctx.lineTo(pos.x, pos.y);
         ctx.stroke();
     }
@@ -156,86 +129,54 @@ function moveDrawOrMove(e) {
 
 // 종료
 function endDrawOrMove(e) {
-    e.preventDefault();
-    그림그리는중 = false;
     드래그중 = false;
-    초기거리 = 0;
+    그림그리는중 = false;
+    if (!e.touches || e.touches.length < 2) 초기거리 = 0;
 }
 
-// 그리기 함수
-function 그리기() {
-    // 캔버스 초기화
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-    // 배경 템플릿
-    if (템플릿이미지) {
-        ctx.drawImage(템플릿이미지, 0, 0, canvas.width, canvas.height);
-    } else {
-        // 기본 배경색 또는 패턴 필요하면 추가 가능
-        ctx.fillStyle = "#f0f0f0";
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-    }
-
-    // 업로드 이미지
-    if (업로드이미지) {
-        ctx.drawImage(
-            업로드이미지,
-            이미지위치.x,
-            이미지위치.y,
-            업로드이미지.width * 이미지스케일,
-            업로드이미지.height * 이미지스케일
-        );
-    }
-}
-
-// 다운로드
-document.getElementById("다운로드버튼").addEventListener("click", () => {
-    // 임시 캔버스 생성 (실제 크기 기준)
-    let exportCanvas = document.createElement("canvas");
-    exportCanvas.width = canvas.width;
-    exportCanvas.height = canvas.height;
-    let exportCtx = exportCanvas.getContext("2d");
-
-    // 템플릿
-    if (템플릿이미지) {
-        exportCtx.drawImage(템플릿이미지, 0, 0, exportCanvas.width, exportCanvas.height);
-    } else {
-        exportCtx.fillStyle = "#f0f0f0";
-        exportCtx.fillRect(0, 0, exportCanvas.width, exportCanvas.height);
-    }
-
-    // 업로드 이미지
-    if (업로드이미지) {
-        exportCtx.drawImage(
-            업로드이미지,
-            이미지위치.x,
-            이미지위치.y,
-            업로드이미지.width * 이미지스케일,
-            업로드이미지.height * 이미지스케일
-        );
-    }
-
-    // 현재 캔버스에 그린 그림 (직접 복사)
-    exportCtx.drawImage(canvas, 0, 0);
-
-    // 다운로드
-    let link = document.createElement("a");
-    link.download = "photocard.png";
-    link.href = exportCanvas.toDataURL("image/png");
-    link.click();
-});
-
-// 캔버스 이벤트 연결
+// 이벤트 등록
 canvas.addEventListener("mousedown", startDrawOrMove);
 canvas.addEventListener("mousemove", moveDrawOrMove);
 canvas.addEventListener("mouseup", endDrawOrMove);
-canvas.addEventListener("mouseout", endDrawOrMove);
+canvas.addEventListener("mouseleave", endDrawOrMove);
 
 canvas.addEventListener("touchstart", startDrawOrMove, { passive: false });
 canvas.addEventListener("touchmove", moveDrawOrMove, { passive: false });
 canvas.addEventListener("touchend", endDrawOrMove);
-canvas.addEventListener("touchcancel", endDrawOrMove);
 
-// 초기 세팅
-resizeCanvas();
-window.addEventListener("resize", resizeCanvas);
+// 마우스 휠 확대/축소
+canvas.addEventListener("wheel", (e) => {
+    e.preventDefault();
+    const scaleAmount = e.deltaY < 0 ? 1.1 : 0.9;
+    이미지스케일 *= scaleAmount;
+    if (이미지스케일 < 0.1) 이미지스케일 = 0.1;
+    if (이미지스케일 > 5) 이미지스케일 = 5;
+    그리기();
+}, { passive: false });
+
+// 다운로드
+document.getElementById("다운로드버튼").addEventListener("click", () => {
+    try {
+        let link = document.createElement("a");
+        link.download = "포토카드.png";
+        link.href = canvas.toDataURL();
+        link.click();
+    } catch (err) {
+        console.error("E200: 다운로드 실패", err);
+        alert("다운로드 중 오류가 발생했습니다. (코드: E200)");
+    }
+});
+
+// 그리기
+function 그리기() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    if (업로드이미지) {
+        let w = 업로드이미지.width * 이미지스케일;
+        let h = 업로드이미지.height * 이미지스케일;
+        ctx.drawImage(업로드이미지, 이미지위치.x, 이미지위치.y, w, h);
+    }
+    if (템플릿이미지) {
+        ctx.drawImage(템플릿이미지, 0, 0, canvas.width, canvas.height);
+    }
+}
+
