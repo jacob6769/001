@@ -42,6 +42,27 @@ document.getElementById('이미지업로드').addEventListener('change', e => {
 // ================== 템플릿 선택 ==================
 document.querySelectorAll('.템플릿버튼').forEach(btn => {
     btn.addEventListener('click', () => {
+        const newWidth = parseInt(btn.dataset.width, 10);
+        const newHeight = parseInt(btn.dataset.height, 10);
+
+        // 캔버스 크기 변경
+        canvas.width = newWidth;
+        canvas.height = newHeight;
+
+        // 그림 전용 캔버스도 크기 변경
+        drawCanvas.width = newWidth;
+        drawCanvas.height = newHeight;
+
+        // 오프셋 및 배율 초기화
+        offsetX = 0;
+        offsetY = 0;
+        scale = targetScale = 1;
+
+        // 배경 초기화
+        ctx.fillStyle = "#fff";
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        // 템플릿 이미지 불러오기
         templateImg = new Image();
         templateImg.onload = drawAll;
         templateImg.onerror = () => alert("템플릿 이미지를 불러올 수 없습니다.");
@@ -66,17 +87,14 @@ function getPointerPos(e) {
     let x, y;
 
     if (e.touches) {
-        // 터치 이벤트 좌표를 캔버스 크기에 맞춰 보정
         const scaleX = canvas.width / rect.width;
         const scaleY = canvas.height / rect.height;
-
         x = (e.touches[0].clientX - rect.left) * scaleX;
         y = (e.touches[0].clientY - rect.top) * scaleY;
     } else {
         x = e.offsetX;
         y = e.offsetY;
     }
-
     return { x, y };
 }
 
@@ -150,12 +168,11 @@ canvas.addEventListener('touchmove', e => {
         const y2 = e.touches[1].clientY - rect.top;
 
         const dist = Math.hypot(x2 - x1, y2 - y1);
-        const centerX = (x1 + x2)/2;
-        const centerY = (y1 + y2)/2;
+        const centerX = (x1 + x2) / 2;
+        const centerY = (y1 + y2) / 2;
 
         if (lastTouchDist) {
             const zoom = dist / lastTouchDist;
-
             offsetX = centerX - (centerX - offsetX) * zoom;
             offsetY = centerY - (centerY - offsetY) * zoom;
             targetScale *= zoom;
